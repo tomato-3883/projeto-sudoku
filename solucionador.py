@@ -24,17 +24,24 @@ def montar_grade_do_arquivo(caminho_arquivo): #lê o arquivo de pistas e monta a
                         col = ord(letra_col) - ord('A')
                         lin = num_lin - 1
                         
+                        #acusa erro caso leia pistas inválidas dos arquivos
+                        if grade[lin][col] !=0 or not verificar_movimento_valido(grade, valor, lin, col):
+                            print('\033[1;31mO arquivo de pistas apresenta pistas inválidas.\033[0m')
+                            sys.exit(1)
+                        
                         grade[lin][col] = valor
                         pistas_marcadas[lin][col] = True
+
                     except (ValueError, IndexError):
                         print(f"Ignorando linha com formato inválido '{linha_limpa}'")
+
     except FileNotFoundError:
         print(f"Arquivo não encontrado: {caminho_arquivo}")
         return None, None
     
     return grade, pistas_marcadas
 
-def imprimir_tabuleiro(matriz, pistas_marcadas): #função que imprime a grade e colore de vermelho, conforme requisitado no trabalho
+def imprimir_tabuleiro(matriz, pistas_marcadas):
     print('     A   B   C    D   E   F    G   H   I')
     print('  ++---+---+---++---+---+---++---+---+---++')
     for li in range(9):
@@ -44,10 +51,14 @@ def imprimir_tabuleiro(matriz, pistas_marcadas): #função que imprime a grade e
             print('  ++---+---+---++---+---+---++---+---+---++')
         
         print(f'{li + 1} ||', end='')
+
         for co in range(9):
-            if co % 3 == 0:
-                print('|', end='')
-            
+            if co != 0:
+                if co % 3 == 0:
+                    print('||', end='')
+                else:
+                    print('|', end='')
+
             num = matriz[li][co]
             if num != 0:
                 if pistas_marcadas[li][co]:
@@ -55,10 +66,12 @@ def imprimir_tabuleiro(matriz, pistas_marcadas): #função que imprime a grade e
                 else:
                     print(f"{num:^3}", end='')
             else:
-                print(f"{'.':^3}", end='')
-        
-        print('|' + f'|| {li + 1}')
+                print(f"{'':^3}", end='')
+
+        print(f'|| {li + 1}')
     print('  ++---+---+---++---+---+---++---+---+---++')
+    print('     A   B   C    D   E   F    G   H   I')
+
 
 def verificar_movimento_valido(matriz, numero, linha, coluna):
     for i in range(9):
@@ -72,37 +85,45 @@ def verificar_movimento_valido(matriz, numero, linha, coluna):
                 return False
     return True
 
-def encontrar_casa_vazia(matriz): #encontra a próxima célula vazia
+def opcoes_possiveis(matriz, linha, coluna): #vê quais números podem ser usados e guarda numa lista
+    if matriz[linha][coluna] != 0:
+        return []
+
+    opcoes = []
+    for numero in range(1, 10):
+        if verificar_movimento_valido(matriz, numero, linha, coluna):
+            opcoes.append(numero)
+    return opcoes
+
+#função que tenta resolver a matriz com base nas dicas
+def resolver_sudoku(matriz, pistas_marcadas):
+    matriz_ant = [[-1 for _ in range(9)] for _ in range(9)]
+
+    while matriz != matriz_ant: #faz uma cópia da matriz atual para comparar depois
+
+        #cria uma cópia de cada linha da matriz real, pra não deixar que as mudanças em uma matriz alterem a outra
+        matriz_ant = [linha[:] for linha in matriz] 
+
+        for linha in range(9):
+            for coluna in range(9):
+                if matriz[linha][coluna] == 0:
+                    opcoes = opcoes_possiveis(matriz, linha, coluna)
+                    if len(opcoes) == 1:
+                        matriz[linha][coluna] = opcoes[0]
+                        pistas_marcadas[linha][coluna] = False
+
+    #vê se todo o tabuleiro foi completado
     for linha in range(9):
         for coluna in range(9):
             if matriz[linha][coluna] == 0:
-                return (linha, coluna)
-    return None
+                return False
+    return True
 
-def solucionar_matriz(matriz): #função principal para responder o sudoku com backtracing
-    casa_vazia = encontrar_casa_vazia(matriz)
-    if not casa_vazia:
-        return True
+caminho_do_arquivo = sys.argv[1]
+         
+matriz_jogo, pistas_marcadas = montar_grade_do_arquivo(caminho_do_arquivo) #carrega a matriz do jogo e a marcação das pistas
 
-    linha, coluna = casa_vazia
-    for numero_tentativa in range(1, 10):
-        if verificar_movimento_valido(matriz, numero_tentativa, linha, coluna):
-            matriz[linha][coluna] = numero_tentativa
-            if solucionar_matriz(matriz):
-                return True
-            matriz[linha][coluna] = 0
-    return False
-
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Forneça o nome do arquivo de pistas")
-        print("python3 solucionador.py arq_01_cfg.txt")
-    else:
-        caminho_do_arquivo = sys.argv[1]
-        
-        matriz_jogo, pistas_marcadas = montar_grade_do_arquivo(caminho_do_arquivo) #carrega a matriz do jogo e a marcação das pistas
-
-        if matriz_jogo:
+if matriz_jogo:
             print("--- Módulo Solucionador ---")
             print(f"\nTabuleiro inicial do arquivo {caminho_do_arquivo}")
             imprimir_tabuleiro(matriz_jogo, pistas_marcadas)
@@ -111,11 +132,19 @@ if __name__ == "__main__":
             
             if confirmacao != 'N':
                 print("\nIniciando a solução")
-                if solucionar_matriz(matriz_jogo):
-                    print("\nSolução possível e encontrada")
-                    print("\nTabuleiro Resolvido:")
-                    imprimir_tabuleiro(matriz_jogo, pistas_marcadas)
+                sucesso = resolver_sudoku(matriz_jogo, pistas_marcadas)
+                print('Grade preenchida com base nas pistas:')
+                imprimir_tabuleiro(matriz_jogo, pistas_marcadas)
+
+                if not sucesso:
+                    print()
+                    print('\033[1;31mNão foi possível continuar, quantidade de pistas insuficiente.\033[0m')
+
+                    sys.exit(1)
                 else:
-                    print("\nNão foi possível encontrar uma solução")
+                    print()
+                    print('\033[1;32mSudoku solucionado com sucesso!\033[0m')
+                    sys.exit(0)
             else:
                 print("Operação cancelada.")
+                sys.exit(0)
