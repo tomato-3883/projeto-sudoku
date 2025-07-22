@@ -78,7 +78,7 @@ def preencher_de_respostas(arquivo,M):
                 invalido.append(f'A jogada ({coluna_str},{linha+1}) = {valor} é inválida!')
     return invalido, resolvido(M)
 
-M = [[0]*9 in range(9)] #Matriz que será usada para armazenar os dados
+M = [[0]*9 for _ in range(9)] #Matriz que será usada para armazenar os dados
 
 arquivo_dicas = argv[1]
 arquivo_respostas = argv[2]
