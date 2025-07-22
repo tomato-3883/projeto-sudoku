@@ -14,7 +14,7 @@ pistas_tabuleiro = [[False for _ in range(colunas)] for _ in range(linhas)]
 #A lista/matriz do tabuleiro em si
 matriz = [[0 for _ in range(colunas)] for _ in range(linhas)]
 
-#Função que define a forma e designe do tabuleiro, como está no exemplo do arquivo do trabalhos
+#Função que define a forma e design do tabuleiro, como está no exemplo do arquivo do trabalho
 def tabuleiro_sudoku(matriz):
 
    print('     A   B   C    D   E   F    G   H   I')
@@ -42,7 +42,7 @@ def tabuleiro_sudoku(matriz):
 
        if num !=0:
         
-        #Dá a cor vermelhas aos números vindos das pistas
+        #Dá a cor vermelhas aos números das pistas
         if pistas_tabuleiro[li][co]:
           print(f"\033[1;31m{num :^3}\033[0m" , end = '')
 
@@ -261,7 +261,7 @@ while True:
       print('\033[1;31mPosição fora do range do tabuleiro [A,I][1,9]. Faça uma nova jogada.'
          + '\033[0m')
       
-#Caso a entrada não seja nem um comando específico, faz a verificação da jogada de fato
+#Caso a entrada não seja nenhum comando específico, faz a verificação da jogada
  else:
 
   co, li_num = jogada.split(',')
