@@ -1,3 +1,7 @@
+#ATÔNIO ÍTALO BARROS NOGUEIRA - 581571
+#DAVI RABELO DE OLIVEIRA - 581052
+#GUSTAVO MELO DE SOUSA - 580490
+
 from sys import argv
 
 def traducao(entrada):
