@@ -145,17 +145,18 @@ def vitoria(matriz):
       
   return True
 
+#Função que transforma uma entrada em algo usavel e armazenavel numa matriz
 def traducao(entrada):
-    coord,valor = entrada.split(':')
+    coord,valor = entrada.split(':') #Separa a entrada em cordenadas e valor
     valor = int(valor)
-    c,linha = coord.split(',')
+    c,linha = coord.split(',') #Separa as cordenadas em coluna e linha
     linha = int(linha)
-    if linha < 1 or linha > 9:
+    if linha < 1 or linha > 9: #Retorna falso se a entrada da linha for invalida para o sudoku
         return False
-    linha = linha - 1
-    if valor < 1 or valor > 9:
+    linha = linha - 1 # -1 para armazenar o valor no lugar correto da matriz
+    if valor < 1 or valor > 9: #Retorna falso se a entrada do valor for invalida para o sudoku
         return False
-    else:
+    else: #Transforma a coluna em algo usavel para armazenar o valor na matriz e retorna falso se a coluna for invalida para um jogo de sudoku
         if c == 'a' or c == 'A':
             coluna = 0
         elif c == 'b' or c == 'B':
@@ -178,6 +179,7 @@ def traducao(entrada):
             return False
     return coluna,linha,valor
 
+#Função que determina se uma determinada jogada ou dica é válida
 def eh_valido(M,coluna,linha,valor):
     for j in range(9): #Verificando se há valores iguais na linha
         if M[linha][j] == valor:
@@ -185,7 +187,7 @@ def eh_valido(M,coluna,linha,valor):
     for i in range(9): #Verificando se há valores iguais na coluna
         if M[i][coluna] == valor:
             return False
-    #Verificar no bloco se há valores iguais
+    #Verificando no bloco se há valores iguais
     x = linha // 3
     y = coluna // 3
     for i in range(x*3 , x*3+3):
@@ -204,23 +206,24 @@ def resolvido(M): #Para sabermos se um determinado jogo está completo, precisam
 def preencher_de_dicas(arquivo,M):
     with open(arquivo,'r') as lista_dicas: #Abrir o arquivo de dicas
         for dica in lista_dicas: #Pega cada dica da lista inteira de dicas
-            coluna,linha,valor = traducao(dica) #Traduz a dica para algo usavel
-            if eh_valido(M,coluna,linha,valor): #Determina se essa dica é válida
+            coluna,linha,valor = traducao(dica)
+            if eh_valido(M,coluna,linha,valor):
                 M[linha][coluna] = valor
             else:
                 return False #Se a dica for inválida, vai ser o gatilho para o arquivo de dicas ser inválido
     return M
 
+#Função semelhante ao preencher_de_dicas, so que para as respostas
 def preencher_de_respostas(arquivo,M):
     with open(arquivo,'r') as lista_respostas:
-        invalido = []
+        invalido = [] #Lista que vai armazenar as jogadas que forem inválidas
         for resposta in lista_respostas:
-            coluna_str,tanto_faz = resposta.split(',')
+            coluna_str,x = resposta.split(',') #Aqui, como na traducao() eu transformo a str da coluna em um numero para armazenar na matriz, eu antes de traduzir a resposta, obtenho antes a letra correspondente a coluna          
             coluna,linha,valor = traducao(resposta)
             if eh_valido(M,coluna,linha,valor):
                 M[linha][coluna] = valor
             else:
-                invalido.append(f'A jogada ({coluna_str},{linha+1}) = {valor} é inválida!')
+                invalido.append(f'A jogada ({coluna_str},{linha+1}) = {valor} é inválida!') #O modo batch precisa expor quais jogadas são invalidas, por isso armazeno elas na formatação correta previamente
     return invalido, resolvido(M)
 #MODO BATCH
 if len(sys.argv) == 3:
