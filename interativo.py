@@ -289,7 +289,6 @@ while True:
         
    elif jogada_valida(matriz, li, co, num):
     matriz[li][co] = num
-    cont += 1
 
   else:
    print()
